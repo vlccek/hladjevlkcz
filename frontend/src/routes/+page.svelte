@@ -15,17 +15,13 @@
 
     onMount(async () => await loadFood(value));
 
-    async function loadFood(id: number) {
-        console.log("hovno");
-        console.log(id);
+    $: value, loadFood(value);
 
+    async function loadFood(id: number) {
         const res = await fetch(
             `http://localhost:5000/api/v2//menues/${id}/today`
         );
-
         const f = await res.json();
-        console.log(f);
-
         foods = f;
     }
 </script>
@@ -36,7 +32,6 @@
             style="width: 300px;"
             key={(canteens) => `${canteens ? canteens.name : ""}`}
             bind:value
-            on:change={async (foods) => loadFood(value)}
             label="Vyberte menzu"
         >
             {#each canteens as canteen (canteen.name)}

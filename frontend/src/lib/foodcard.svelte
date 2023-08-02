@@ -1,14 +1,7 @@
 <!-- FoodCard.svelte -->
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import Card, {
-    Content,
-    PrimaryAction,
-    Actions,
-    ActionButtons,
-    ActionIcons,
-  } from "@smui/card";
-  import LayoutGrid, { Cell } from "@smui/layout-grid";
+  import Card, {    PrimaryAction,  } from "@smui/card";
   import Chip, { Set, LeadingIcon, Text } from "@smui/chips";
   export let id: number;
   export let name: string;
