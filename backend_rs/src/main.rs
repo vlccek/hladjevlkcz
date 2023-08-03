@@ -1,8 +1,8 @@
 use sea_orm::*;
 use rocket::State;
 use rocket::serde::json::Json;
-use sea_orm::prelude::Json;
-use rocket::http::Status;
+use serde_json;
+use serde_json::json;
 
 
 mod orm;
@@ -22,19 +22,19 @@ fn index() -> &'static str {
 }
 
 #[get("/test")]
-async fn test(dbc: &State<DatabaseConnection>) ->  Result<Json<Vec<foods::Model>>, Status>{
-    Ok(Json(
-        Foods::find()
-        .filter(foods::Column::Name.contains("knedlík"))
-        .all(&dbc)
+async fn test(dbc: &State<DatabaseConnection>) -> Json<Vec<foods::Model>> {
+    let db = dbc as &DatabaseConnection;
+    let f = Foods::find()
+        .all(db )
         .await
-        .unwrap()
-    ))
+        .unwrap() ;
+
+    return Json(f);
 }
 
 #[launch]
 async fn rocket() -> _ {
-    let dbc = match Database::connect("postgresql://hello_flask:hello_flask@db:5432/hello_flask_dev").await{
+    let dbc = match Database::connect("postgres://hello_flask:hello_flask@localhost:5432/hello_flask_dev").await{
         Ok(connection) => connection,
         Err(e) => {
             panic!("Nelze se připojit k db ")
@@ -42,5 +42,5 @@ async fn rocket() -> _ {
     };
     rocket::build()
         .manage(dbc)
-        .mount("/", routes![index])
+        .mount("/", routes![index, test])
 }
