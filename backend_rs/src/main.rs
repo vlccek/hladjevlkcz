@@ -1,14 +1,11 @@
 use sea_orm::*;
 use rocket::State;
 use rocket::serde::json::Json;
-use serde_json;
-use serde_json::json;
 
 
 mod orm;
 use orm::foods::Entity as Foods;
 use orm::foods;
-use crate::orm::foods::Model;
 
 
 // import all orm entities
@@ -28,7 +25,6 @@ async fn test(dbc: &State<DatabaseConnection>) -> Json<Vec<foods::Model>> {
         .all(db )
         .await
         .unwrap() ;
-
     return Json(f);
 }
 
@@ -36,7 +32,7 @@ async fn test(dbc: &State<DatabaseConnection>) -> Json<Vec<foods::Model>> {
 async fn rocket() -> _ {
     let dbc = match Database::connect("postgres://hello_flask:hello_flask@localhost:5432/hello_flask_dev").await{
         Ok(connection) => connection,
-        Err(e) => {
+        Err(_) => {
             panic!("Nelze se připojit k db ")
         }
     };
