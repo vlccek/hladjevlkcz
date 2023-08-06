@@ -3,17 +3,25 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "food_ingredients")]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, SimpleObject)]
+#[sea_orm(table_name = "food_allergens")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub food_id: i32,
     #[sea_orm(primary_key, auto_increment = false)]
-    pub ingredient_id: i32,
+    pub allergen_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::allergens::Entity",
+        from = "Column::AllergenId",
+        to = "super::allergens::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Allergens,
     #[sea_orm(
         belongs_to = "super::foods::Entity",
         from = "Column::FoodId",
@@ -22,14 +30,12 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Foods,
-    #[sea_orm(
-        belongs_to = "super::ingredients::Entity",
-        from = "Column::IngredientId",
-        to = "super::ingredients::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
-    )]
-    Ingredients,
+}
+
+impl Related<super::allergens::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Allergens.def()
+    }
 }
 
 impl Related<super::foods::Entity> for Entity {
@@ -38,18 +44,12 @@ impl Related<super::foods::Entity> for Entity {
     }
 }
 
-impl Related<super::ingredients::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Ingredients.def()
-    }
-}
-
 impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
+    #[sea_orm(entity = "super::allergens::Entity")]
+    Allergens,
     #[sea_orm(entity = "super::foods::Entity")]
     Foods,
-    #[sea_orm(entity = "super::ingredients::Entity")]
-    Ingredients,
 }

@@ -5,7 +5,7 @@ use super::sea_orm_active_enums::Foodtypeenum;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, SimpleObject)]
 #[sea_orm(table_name = "foods")]
 pub struct Model {
     #[sea_orm(primary_key)]
