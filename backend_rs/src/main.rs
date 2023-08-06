@@ -1,38 +1,33 @@
 use sea_orm::*;
+use sea_orm::{Iden};
 use rocket::State;
 use rocket::serde::json::Json;
-use sea_orm::sea_query::{Func, ValueType};
-use sea_orm::sea_query::OnConflictUpdate::Expr;
 
 mod setup;
 
 use setup::set_up_db;
+
+use sea_query::{
+    Alias, Cond, Expr, Func, Query, SelectStatement,
+    SqliteQueryBuilder,
+};
 
 
 mod orm;
 
 use orm::foods::Entity as Foods;
 use orm::foods;
-
 use orm::current_foods::Entity as Current_foods;
 use orm::current_foods;
-
 use orm::ratings::Entity as Ratings;
 use crate::orm::ratings;
 
 
-// import all orm entities
-
-
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
-use async_graphql::{
-    http::{playground_source, GraphQLPlaygroundConfig},
-};
-use async_graphql_rocket::*;
 use rocket::{response::content, *};
 use rocket::serde::Serialize;
-use schema::*;
-
+use sea_orm::sea_query::ColumnRef::Column;
+use sea_orm::sea_query::ConditionExpression::SimpleExpr;
+use sea_orm::TryGetError::DbErr;
 
 #[macro_use]
 extern crate rocket;
@@ -61,22 +56,35 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
         name: String,
         name_en: String,
         price_student: i32,
+        count_of_rev: i64,
+        suma: i64,
     }
+
+    let review_alias = Alias::new("r");
 
     let db = dbc as &DatabaseConnection;
     let select = Current_foods::find()
         .join(JoinType::Join, current_foods::Relation::Foods.def())
         .join(JoinType::Join, current_foods::Relation::Ratings.def())
+        .column_as(ratings::Column::Points.count(), "count_of_rev")
+        .column_as(ratings::Column::Points.sum(), "suma")
+        // :) .expr(Func::avg(Expr::col(())))
+        .group_by(current_foods::Column::Id)
+        .group_by(foods::Column::Name)
+        .group_by(foods::Column::NameEn)
+        .group_by(foods::Column::PriceStudent)
         .columns([foods::Column::Name, foods::Column::NameEn, foods::Column::PriceStudent])
         .filter(current_foods::Column::CanteenId.eq(id));
 
+    println!("{}", select.build(DatabaseBackend::Postgres).to_string());
 
-    let f = match select.into_model::<SelectResult>()
+    return match select.into_model::<SelectResult>()
         .all(db)
         .await {
-        Some(x) => return serde_json::to_string(&x).unwrap(),
-        None => return "{err: Nelze neni ve smlouve}".to_owned(),
+        Err(e) => format!("err : {}", e).to_owned(),
+        Ok(s) => serde_json::to_string(&s).unwrap(),
     };
+    ;
 }
 
 
@@ -90,5 +98,5 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(dbc)
-        .mount("/", routes![index, canteen_foods ])
+        .mount("/api", routes![index, canteen_foods ])
 }
