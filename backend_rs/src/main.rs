@@ -7,11 +7,6 @@ mod setup;
 
 use setup::set_up_db;
 
-use sea_query::{
-    Alias, Cond, Expr, Func, Query, SelectStatement,
-    SqliteQueryBuilder,
-};
-
 
 mod orm;
 
@@ -21,13 +16,20 @@ use orm::current_foods::Entity as Current_foods;
 use orm::current_foods;
 use orm::ratings::Entity as Ratings;
 use crate::orm::ratings;
+use orm::canteens::Entity as Canteens;
+use orm::canteens;
 
 
 use rocket::{response::content, *};
 use rocket::serde::Serialize;
-use sea_orm::sea_query::ColumnRef::Column;
-use sea_orm::sea_query::ConditionExpression::SimpleExpr;
-use sea_orm::TryGetError::DbErr;
+
+
+mod auth;
+mod jwt;
+
+
+
+
 
 #[macro_use]
 extern crate rocket;
@@ -60,7 +62,6 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
         suma: i64,
     }
 
-    let review_alias = Alias::new("r");
 
     let db = dbc as &DatabaseConnection;
     let select = Current_foods::find()
@@ -88,6 +89,28 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
 }
 
 
+#[get("/canteens")]
+async fn all_canteens(dbc: &State<DatabaseConnection>) -> String{
+    let db = dbc as &DatabaseConnection;
+
+    #[derive(FromQueryResult, Serialize)]
+    struct SelectResultCanteens {
+        id: i32,
+        name: String,
+    }
+
+    let select = Canteens::find()
+        .columns([canteens::Column::Id, canteens::Column::Name]);
+
+    return match select.into_model::<SelectResultCanteens>()
+        .all(db)
+        .await {
+        Err(e) => format!("err : {}", e).to_owned(),
+        Ok(s) => serde_json::to_string(&s).unwrap(),
+    };
+}
+
+
 #[launch]
 async fn rocket() -> _ {
     let dbc = match set_up_db().await {
@@ -98,5 +121,5 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(dbc)
-        .mount("/api", routes![index, canteen_foods ])
+        .mount("/api", routes![index, canteen_foods, all_canteens, auth::login_user ])
 }

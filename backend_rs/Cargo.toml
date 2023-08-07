@@ -12,6 +12,8 @@ serde = {version = "1.0.130" ,features = ["derive"]}
 serde_json = {version = "1.0"}
 async-graphql = "4.0.4"
 async-graphql-rocket = "4.0.4"
+jsonwebtoken = "8.1.1"
+chrono = "0.4.26"
 
 
 [dependencies.rocket]
