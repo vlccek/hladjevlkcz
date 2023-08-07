@@ -24,11 +24,8 @@ use rocket::{response::content, *};
 use rocket::serde::Serialize;
 
 
-mod auth;
 mod jwt;
-
-
-
+mod auth;
 
 
 #[macro_use]
@@ -62,7 +59,6 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
         suma: i64,
     }
 
-
     let db = dbc as &DatabaseConnection;
     let select = Current_foods::find()
         .join(JoinType::Join, current_foods::Relation::Foods.def())
@@ -77,20 +73,17 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
         .columns([foods::Column::Name, foods::Column::NameEn, foods::Column::PriceStudent])
         .filter(current_foods::Column::CanteenId.eq(id));
 
-    println!("{}", select.build(DatabaseBackend::Postgres).to_string());
-
     return match select.into_model::<SelectResult>()
         .all(db)
         .await {
-        Err(e) => format!("err : {}", e).to_owned(),
+        Err(e) => Json(format!("'err' : '{}'", e).to_owned()).to_string(),
         Ok(s) => serde_json::to_string(&s).unwrap(),
     };
-    ;
 }
 
 
 #[get("/canteens")]
-async fn all_canteens(dbc: &State<DatabaseConnection>) -> String{
+async fn all_canteens(dbc: &State<DatabaseConnection>) -> String {
     let db = dbc as &DatabaseConnection;
 
     #[derive(FromQueryResult, Serialize)]
@@ -100,7 +93,7 @@ async fn all_canteens(dbc: &State<DatabaseConnection>) -> String{
     }
 
     let select = Canteens::find()
-        .columns([canteens::Column::Id, canteens::Column::Name]);
+        .columns([canteens::Column::Id, canteens::Column::Id]);
 
     return match select.into_model::<SelectResultCanteens>()
         .all(db)
@@ -121,5 +114,10 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(dbc)
-        .mount("/api", routes![index, canteen_foods, all_canteens, auth::login_user ])
+        .mount("/api", routes![index,
+            canteen_foods,
+            all_canteens,
+            auth::login_user,
+            auth::register_user
+        ])
 }
