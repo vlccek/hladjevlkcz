@@ -70,7 +70,7 @@ pub async fn register_user(dbc: &State<DatabaseConnection>, userdata: Json<UserR
 
     let new_user = users::ActiveModel{
         id: ActiveValue::NotSet,
-        login : ActiveValue::Set( userdata.login),
+        login : ActiveValue::Set( userdata.login.to_owned()),
         email : ActiveValue::Set(userdata.email.as_str().parse().unwrap()),
         password : ActiveValue::Set(userdata.password.as_str().parse().unwrap()),
         role: ActiveValue::Set(Option::from(Userroleenum::User)),
