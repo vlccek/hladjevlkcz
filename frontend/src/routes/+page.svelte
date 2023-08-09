@@ -3,6 +3,7 @@
     import { onMount } from "svelte";
     import Select, { Option } from "@smui/select";
     import FoodCard from "$lib/foodcard.svelte";
+    import { api_fetch } from "$lib";
 
     let value: number = 1;
 
@@ -15,11 +16,14 @@
     $: value, loadFood(value);
 
     async function loadFood(id: number) {
-        const res = await fetch(
-            `http://localhost:5000/api/v2//menues/${id}/today`
-        );
-        const f = await res.json();
-        foods = f;
+        // const res = await fetch(
+        //     `http://localhost:5000/api/v2//menues/${id}/today`
+        // );
+        // const f = await res.json();
+        // foods = f;
+        const res = await api_fetch("canteen_menu/" + id);
+        foods = res;
+        console.log(foods);
     }
 </script>
 
