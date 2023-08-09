@@ -18,21 +18,20 @@
         const res = await fetch(
             `http://localhost:5000/api/v2//menues/${id}/today`
         );
-        const f = await res.json();
-        foods = f;
+         foods = await res.json();
     }
 </script>
 
 <div class="bg-indigo-darken-4 m-b-xs">
     <div class=" container center">
         <Select
-            style="width: 300px;"
+            style="width: 300px;text-align: center"
             key={(canteens) => `${canteens ? canteens.name : ""}`}
             bind:value
             label="Vyberte menzu"
         >
             {#each canteens as canteen (canteen.name)}
-                <Option value={canteen.id}>{canteen.name}</Option>
+                <Option class="p-b-xs" value={canteen.id}>{canteen.name}</Option>
             {/each}
         </Select>
     </div>
@@ -49,4 +48,7 @@
 </div>
 
 <style>
+:global(.mdc-select__selected-text){
+    padding-left: 16px;
+}
 </style>

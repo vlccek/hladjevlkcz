@@ -13,7 +13,7 @@
   <Card class="m-b-xs">
     <PrimaryAction on:click={() => goto(`/meal/${id}`)}>
       <div class="d-flex">
-        <div class="food scroll p-l-xs">{name}</div>
+        <div class="food scroll p-l-md">{name}</div>
         <div class="price">
           <Set chips={["one"]} let:chip>
             <Chip {chip}>
