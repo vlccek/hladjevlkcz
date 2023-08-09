@@ -3,6 +3,8 @@ use sea_orm::{Iden};
 use rocket::State;
 use rocket::serde::json::Json;
 
+use rocket::tokio::time::{interval, Duration};
+
 mod setup;
 
 use setup::set_up_db;
@@ -25,7 +27,8 @@ use rocket::serde::Serialize;
 
 
 mod jwt;
-mod auth;
+// mod auth;
+mod service;
 
 
 #[macro_use]
@@ -111,13 +114,23 @@ async fn rocket() -> _ {
         Err(err) => panic!("{}", err),
     };
 
+    println!("hovno");
+    tokio::spawn(async move {
+        let mut interval = interval(Duration::from_secs(5));
+        loop {
+            interval.tick().await;
+            service::download_foods().await;
+        }
+    });
+
 
     rocket::build()
         .manage(dbc)
+        .configure(rocket::Config::figment().merge(("port", 9797)))
         .mount("/api", routes![index,
             canteen_foods,
             all_canteens,
-            auth::login_user,
-            auth::register_user
+//            auth::login_user,
+//            auth::register_user
         ])
 }
