@@ -24,7 +24,6 @@ use rocket::{response::content, *};
 use rocket::serde::Serialize;
 
 
-mod jwt;
 mod userinout;
 
 
