@@ -1,3 +1,5 @@
+use rocket_auth::{Users, Error, Auth, Signup, Login, User};
+
 use std::borrow::{BorrowMut, Borrow};
 
 use orm::sea_orm_active_enums::Foodtypeenum;
@@ -8,7 +10,6 @@ use rocket::http::Header;
 use rocket::{Request, Response};
 use rocket::fairing::{Fairing, Info, Kind};
 
-use rocket_auth::{ Users, Error, Auth, Signup, Login};
 
 
 mod orm;
@@ -88,8 +89,7 @@ async fn rocket() -> _ {
             panic!("Nelze se připojit k db.")
         }
     };
-    let users = Users::create_table
-    let users = dbc.into();
+    let users = Users::open_postgres();
     rocket::build()
         .manage(dbc)
         .mount("/api", routes![index, test, sides, canteens]).attach(CORS)
