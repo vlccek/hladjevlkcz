@@ -25,7 +25,7 @@ use rocket::serde::Serialize;
 
 
 mod jwt;
-mod auth;
+mod userinout;
 
 
 #[macro_use]
@@ -117,7 +117,7 @@ async fn rocket() -> _ {
         .mount("/api", routes![index,
             canteen_foods,
             all_canteens,
-            auth::login_user,
-            auth::register_user
+            userinout::login_user,
+            userinout::register_user
         ])
 }

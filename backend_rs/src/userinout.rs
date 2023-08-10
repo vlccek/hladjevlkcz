@@ -4,7 +4,7 @@ use rocket::http::Status;
 use rocket::serde::Deserialize;
 use rocket::serde::json::Json;
 use rocket::State;
-use sea_orm::{ActiveValue, ColumnTrait, DatabaseConnection, EntityOrSelect, EntityTrait, QueryFilter};
+use sea_orm::{ActiveValue, ColumnTrait, DatabaseConnection, DbErr, EntityOrSelect, EntityTrait, InsertResult, QueryFilter};
 use crate::orm;
 use orm::users::Entity as Users;
 use orm::users;
@@ -16,7 +16,8 @@ use sea_orm::sea_query::Token;
 
 use crate::jwt::generate_token;
 use crate::orm::sea_orm_active_enums::Userroleenum;
-use crate::orm::users::Model;
+use crate::orm::users::{ActiveModel, Model};
+use rocket_auth::{Users as Users_auth, Error, Auth, Signup, Login};
 
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
@@ -67,18 +68,24 @@ pub struct UserRegister {
 pub async fn register_user(dbc: &State<DatabaseConnection>, userdata: Json<UserRegister>) -> Status {
     let db = dbc as &DatabaseConnection;
 
-
     let new_user = users::ActiveModel{
         id: ActiveValue::NotSet,
         login : ActiveValue::Set( userdata.login.to_owned()),
-        email : ActiveValue::Set(userdata.email.as_str().parse().unwrap()),
-        password : ActiveValue::Set(userdata.password.as_str().parse().unwrap()),
+        email : ActiveValue::Set(userdata.email.to_owned()),
+        password : ActiveValue::Set(userdata.password.to_owned()),
         role: ActiveValue::Set(Option::from(Userroleenum::User)),
         blocked: ActiveValue::Set(Some(false))
     };
 
-    let e = Users::insert(new_user).exec(db);
+    let e = Users::insert(new_user).exec(db).await;
 
-    return Status::Ok
-
+    return match e {
+        Err(e) => {println!("{}", e);
+        Status::Conflict
+        },
+        _ => {
+            return Status::Ok
+            
+        }
+    };
 }
