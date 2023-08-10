@@ -8,12 +8,14 @@ use rocket::http::Header;
 use rocket::{Request, Response};
 use rocket::fairing::{Fairing, Info, Kind};
 
+use rocket_auth::{ Users, Error, Auth, Signup, Login};
+
 
 mod orm;
 use orm::foods::{Entity as Foods};
 use orm::canteens::{Entity as Canteen, Model};
 use orm::{canteens as ccanteens, current_foods::Entity as cur_food};
-use orm::{foods, current_foods};
+use orm::{foods, current_foods, ratings};
 
 
 pub struct CORS;
@@ -71,7 +73,6 @@ async fn canteens(dbc: &State<DatabaseConnection>, id: u8) -> Json<Vec<current_f
     let db = dbc as &DatabaseConnection;
     let canteen = Canteen::find_by_id(id).one(db).await.unwrap().unwrap();
     let foods: Vec<current_foods::Model> = canteen.find_related(cur_food)
-        .filter(ccanteens::Column::Name.contains("hello"))
         .all(db)
         .await
         .unwrap();
@@ -87,6 +88,8 @@ async fn rocket() -> _ {
             panic!("Nelze se připojit k db.")
         }
     };
+    let users = Users::create_table
+    let users = dbc.into();
     rocket::build()
         .manage(dbc)
         .mount("/api", routes![index, test, sides, canteens]).attach(CORS)
