@@ -89,7 +89,6 @@ async fn rocket() -> _ {
             panic!("Nelze se připojit k db.")
         }
     };
-    let users = Users::open_postgres();
     rocket::build()
         .manage(dbc)
         .mount("/api", routes![index, test, sides, canteens]).attach(CORS)
