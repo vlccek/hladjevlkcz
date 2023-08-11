@@ -57,3 +57,9 @@ pub enum RelatedEntity {
     #[sea_orm(entity = "super::users::Entity")]
     Users,
 }
+
+#[derive(DeriveIden)]
+#[sea_orm(iden = "Ratings")]
+pub enum Ratings {
+    Table
+}

@@ -67,7 +67,7 @@ pub async fn login_user(dbc: &State<DatabaseConnection>, userdata: Json<UserLogi
 
     let token = UserClaim::sign(user_claim);
 
-    (Status::Ok, token)
+    (Status::Ok, Json(format!("'token' : '{}'", token)).to_string() )
 }
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
