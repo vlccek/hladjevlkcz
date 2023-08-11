@@ -1,0 +1,6 @@
+[submodule "backend_rs/--help"]
+	path = backend_rs/--help
+	url = git@github.com:Yaxian/rocket-jwt.git
+[submodule "backend_rs/rocket_jwt"]
+	path = backend_rs/rocket_jwt
+	url = git@github.com:Yaxian/rocket-jwt.git

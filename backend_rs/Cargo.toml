@@ -14,7 +14,7 @@ async-graphql = "4.0.4"
 async-graphql-rocket = "4.0.4"
 chrono = "0.4.26"
 sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-rustls" ] }
-rocket-jwt = {path= "rocket-jwt"}
+rocket-jwt = {path= "rocket_jwt"}
 jsonwebtoken="8.3.0"
 password-auth = "0.3.0"
 scrypt = "0.11.0"
