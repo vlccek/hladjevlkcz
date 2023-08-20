@@ -6,13 +6,12 @@ type canteen = {
 }
 
 type food = {
-    available: boolean,
+    id: number,
     avg: number,
-    category: string[],
-    food_id: number,    
-    food_type: number,
     name: string,
+    name_en: string,
     price_student: number
+    count_of_rev: number,
 }
 
 type foodAd = {

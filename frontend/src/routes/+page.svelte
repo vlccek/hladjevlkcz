@@ -16,9 +16,10 @@
 
     async function loadFood(id: number) {
         const res = await fetch(
-            `http://localhost:5000/api/v2//menues/${id}/today`
+            `http://localhost:8000/api/menues/${id}/today`
         );
         const f = await res.json();
+        console.log(f);
         foods = f;
     }
 </script>
