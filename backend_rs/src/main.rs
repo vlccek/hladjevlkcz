@@ -8,7 +8,6 @@ mod setup;
 
 use setup::set_up_db;
 
-
 mod orm;
 
 use orm::foods::Entity as Foods;
@@ -30,7 +29,11 @@ mod userinout;
 
 use sea_query::{Expr, Func};
 use sqlx::types::{Decimal};
-use sqlx::types::Decimal;
+
+use std::time::{Duration, Instant};
+use serde_json::json;
+use crate::orm::sea_orm_active_enums::{Foodcategoryenum, Foodtypeenum};
+
 
 #[macro_use]
 extern crate rocket;
@@ -52,10 +55,11 @@ async fn test(dbc: &State<DatabaseConnection>) -> Json<Vec<foods::Model>> {
 }
 
 
-#[get("/canteen/<id>")]
+#[get("/menues/<id>/today")]
 async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
     #[derive(FromQueryResult, Serialize)]
     pub struct SelectResult {
+        id: i32,
         name: String,
         name_en: String,
         price_student: i32,
@@ -65,19 +69,12 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
 
     #[derive(FromQueryResult, Serialize)]
     pub struct SelectResultOut {
+        id: i32,
         name: String,
         name_en: String,
         price_student: i32,
         count_of_rev: i64,
         avg: f64,
-    }
-
-    // FIXME: Use correct function once https://github.com/SeaQL/sea-query/pull/671 is resolved
-    struct RoundFunction;
-    impl Iden for RoundFunction {
-        fn unquoted(&self, s: &mut dyn sea_query::Write) {
-            write!(s, "ROUND").unwrap();
-        }
     }
 
     let db = dbc as &DatabaseConnection;
@@ -90,9 +87,9 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
         .group_by(foods::Column::NameEn)
         .group_by(foods::Column::PriceStudent)
         .columns([foods::Column::Name, foods::Column::NameEn, foods::Column::PriceStudent])
+        .columns([current_foods::Column::Id])
         .filter(current_foods::Column::CanteenId.eq(id))
-        .expr_as(Func::avg(Expr::col((ratings::Ratings::Table, ratings::Column::Points))), "avg").to_owned()
-        ;
+        .expr_as(Func::avg(Expr::col((ratings::Ratings::Table, ratings::Column::Points))), "avg").to_owned();
 
 
     return match select.into_model::<SelectResult>()
@@ -100,22 +97,56 @@ async fn canteen_foods(dbc: &State<DatabaseConnection>, id: i32) -> String {
         .await {
         Err(e) => Json(format!("'err' : '{}'", e).to_owned()).to_string(),
         Ok(s) => {
-            /*            let mut out: Vec<SelectResultOut>;
-                        for i in s
-                        {
-                            out.push(
-                                SelectResultOut {
-                                    name: i.name,
-                                    name_en: i.name_en,
-                                    avg: i.avg.round_dp(2).to_string(),
-                                    price_student: i.price_student,
-                                    count_of_rev: i.count_of_rev,
+            let mut out: Vec<SelectResultOut> = Vec::with_capacity(200);
+            for i in s
+            {
+                let nw = SelectResultOut {
+                    id: i.id,
+                    name: i.name,
+                    name_en: i.name_en,
+                    avg: i.avg.round_dp(2).to_string().parse().unwrap(),
+                    price_student: i.price_student,
+                    count_of_rev: i.count_of_rev,
+
+                };
+                out.push(nw);
+            }
+            let json_out = serde_json::json!(out);
+            serde_json::to_string(&json_out).unwrap()
+        }
+    };
+}
+
+#[get("/meal/<id>")]
+async fn food_detail(dbc: &State<DatabaseConnection>, id: i32) -> String {
+    #[derive(FromQueryResult, Serialize)]
+    pub struct SelectResultOut {
+        id: i32,
+        name: String,
+        name_en: String,
+        price_extern: i32,
+        price_employee: i32,
+        price_student: i32,
+        food_type: Option<Foodtypeenum>,
+        category: Option<Vec<Foodcategoryenum>>,
+        weight: Option<String>
+    }
+
+    let db = dbc as &DatabaseConnection;
+    let select = Current_foods::find()
+        .join(JoinType::Join, current_foods::Relation::Foods.def())
+        .filter(current_foods::Column::CanteenId.eq(id))
+        .filter(current_foods::Column::Available.eq(true))
+        .columns([foods::Column::Name, foods::Column::NameEn, foods::Column::PriceStudent, foods::Column::FoodType, foods::Column::Weight, foods::Column::Category, foods::Column::PriceEmployee, foods::Column::PriceExtern]);
 
 
-                                }
-                            )
-                        }*/
-            serde_json::to_string(&s).unwrap()
+    return match select.into_model::<SelectResultOut>()
+        .all(db)
+        .await {
+        Err(e) => Json(format!("'err' : '{}'", e).to_owned()).to_string(),
+        Ok(s) => {
+            let j = serde_json::json!(s);
+            serde_json::to_string(&j).unwrap()
         }
     };
 }
@@ -156,6 +187,7 @@ async fn rocket() -> _ {
         .mount("/api", routes![index,
             canteen_foods,
             all_canteens,
+            food_detail,
             userinout::login_user,
             userinout::register_user
         ])
