@@ -12,6 +12,7 @@ type food = {
     name_en: string,
     price_student: number
     count_of_rev: number,
+    food_id: number,
 }
 
 type foodAd = {

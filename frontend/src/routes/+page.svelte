@@ -4,13 +4,13 @@
     import Select, { Option } from "@smui/select";
     import FoodCard from "$lib/foodcard.svelte";
 
+
     let value: number = 1;
 
     let canteens: canteen[] = data.canteens;
 
     let foods: food[] = [];
 
-    onMount(async () => await loadFood(value));
 
     $: value, loadFood(value);
 
@@ -19,8 +19,8 @@
             `http://localhost:8000/api/menues/${id}/today`
         );
         const f = await res.json();
-        console.log(f);
         foods = f;
+        console.log(foods);
     }
 </script>
 
@@ -39,7 +39,7 @@
     </div>
 </div>
 <div class="container">
-    {#each foods as food (food.food_id)}
+    {#each foods as food}
         <FoodCard
             id={food.food_id}
             name={food.name}
