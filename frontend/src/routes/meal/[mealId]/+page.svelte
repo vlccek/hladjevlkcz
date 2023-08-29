@@ -3,19 +3,20 @@
 
     export let data;
 
-    let fooddata: foodAd = data.meal;
+    let food_data: foodAd = data.meal;
+    console.log(food_data)
 
 </script>
 
 <div class="bg-indigo-darken-4 m-b-xs">
     <div class=" container">
-        <h2>
-            {fooddata.name}
+        <h2 class="m-t-none p-t-md m-b-none">
+            {food_data.name}
         </h2>
-        <h3>
-            {fooddata.name_en}
+        <h3 class="p-t-none m-t-none">
+            {food_data.name_en}
         </h3>
-        <Icon>star</Icon>
+        Hodnocení: <Icon class="material-icons">star</Icon>
     </div>
 </div>
 
