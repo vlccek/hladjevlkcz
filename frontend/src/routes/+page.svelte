@@ -41,7 +41,7 @@
 <div class="container">
     {#each foods as food}
         <FoodCard
-            id={food.food_id}
+            id={food.id}
             name={food.name}
             price={food.price_student}
             rating={food.avg}

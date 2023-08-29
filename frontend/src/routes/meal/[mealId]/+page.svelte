@@ -5,7 +5,6 @@
 
     let fooddata: foodAd = data.meal;
 
-    console.log(fooddata);
 </script>
 
 <div class="bg-indigo-darken-4 m-b-xs">
