@@ -1,7 +1,6 @@
 <script lang="ts">
     export let data;
-    import { onMount } from "svelte";
-    import Select, { Option } from "@smui/select";
+    import Select, {Option} from "@smui/select";
     import FoodCard from "$lib/foodcard.svelte";
 
 
@@ -18,8 +17,7 @@
         const res = await fetch(
             `http://localhost:8000/api/menues/${id}/today`
         );
-        const f = await res.json();
-        foods = f;
+        foods = await res.json();
         console.log(foods);
     }
 </script>
