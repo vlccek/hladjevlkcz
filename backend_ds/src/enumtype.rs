@@ -4,8 +4,9 @@ use diesel::pg::{Pg, PgValue};
 use diesel::serialize::{self, IsNull, Output, ToSql};
 use std::io::Write;
 
+use serde::Serialize;
 
-#[derive(Debug, AsExpression, FromSqlRow)]
+#[derive(Debug, AsExpression, FromSqlRow, PartialEq)]
 #[diesel(sql_type = crate::schema::sql_types::Foodcategoryenum)]
 pub enum Foodcategoryenum {
     Gluten,
@@ -36,7 +37,7 @@ impl FromSql<crate::schema::sql_types::Foodcategoryenum, Pg> for Foodcategoryenu
 }
 
 
-#[derive(Debug, AsExpression, FromSqlRow)]
+#[derive(Debug, AsExpression, FromSqlRow, PartialEq)]
 #[diesel(sql_type = crate::schema::sql_types::Foodtypeenum)]
 pub enum Foodtypeenum {
     Desert,
@@ -72,7 +73,7 @@ impl FromSql<crate::schema::sql_types::Foodtypeenum, Pg> for Foodtypeenum {
     }
 }
 
-#[derive(Debug, AsExpression, FromSqlRow)]
+#[derive(Debug, AsExpression, FromSqlRow, Serialize)]
 #[diesel(sql_type = crate::schema::sql_types::Userroleenum)]
 pub enum Userroleenum {
     Admin,

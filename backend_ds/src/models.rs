@@ -5,6 +5,7 @@
 
 use diesel::prelude::*;
 use chrono;
+use serde::Serialize;
 use chrono::NaiveDate;
 use chrono::NaiveDateTime;
 use chrono::NaiveTime;
@@ -36,7 +37,10 @@ pub struct Canteen {
     pub opened_second_friday: Option<Vec<Option<NaiveTime>>>,
 }
 
-#[derive(Queryable, Debug, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations, Debug, PartialEq, Serialize)]
+#[diesel(belongs_to(Food))]
+#[diesel(table_name = current_foods)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CurrentFood {
     pub id: i32,
     pub food_id: Option<i32>,
@@ -59,7 +63,8 @@ pub struct FoodIngredient {
     pub ingredient_id: i32,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Selectable, Identifiable, Debug, PartialEq, Serialize)]
+#[diesel(table_name = foods)]
 pub struct Food {
     pub id: i32,
     pub name: String,
@@ -82,7 +87,6 @@ pub struct Ingredient {
     pub is_checked: Option<bool>,
 }
 
-#[derive(Queryable, Debug)]
 pub struct Rating {
     pub id: i32,
     pub points: i32,
@@ -92,7 +96,7 @@ pub struct Rating {
     pub food_id: Option<i32>,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Serialize)]
 pub struct User {
     pub id: i32,
     pub login: Option<String>,
